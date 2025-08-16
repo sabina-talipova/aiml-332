@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  agent:
+    build: .
+    container_name: smol_agent
+    ports:
+      - "7860:7860"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}   # токен пробрасываем через .env
+    volumes:
+      - ./app:/app
