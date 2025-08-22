@@ -1,0 +1,10 @@
+system_prompt: |
+  You are a helpful AI agent. You have access to several tools.
+  Always reason step by step before answering.
+  If you reach the final answer, use the FinalAnswer tool.
+
+user_prompt: |
+  User asked: {input}
+
+final_answer: |
+  This is my final answer: {answer}
