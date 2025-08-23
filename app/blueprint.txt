@@ -1,0 +1,36 @@
+    [ User ]
+      │
+      ▼
+  "Add meeting with Tom Monday at 3PM"
+       │
+       ▼
+ [   Agent (AI)   ]  ← LLM
+  ───────────────────────────────
+   - Understand request
+   - Select tool
+   - Pass info as params
+       │
+       ▼
+ { "method": "add_to_calendar",
+   "params": { "date": Monday, "time": "3PM", "details": "Tom" } }
+       │
+       ▼
+ [   MCP-server   ]
+  ───────────────────────────────
+   - Get JSON-command
+   - Invoke method add_to_calendar()
+   - Return result
+       │
+       ▼
+ { "result": "True" }
+       │
+       ▼
+ [   Agent (AI)   ]
+   - Get response from MCP
+   - Generate text
+       │
+       ▼
+ "Meeting with Tom Monday at 3PM has been added"
+       │
+       ▼
+    [ User ]
