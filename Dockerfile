@@ -11,4 +11,4 @@ COPY app /app
 
 ENV HF_TOKEN=""
 
-CMD ["python"]
+CMD ["python", "server.py"]
