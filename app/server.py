@@ -12,25 +12,78 @@ from openai import OpenAI
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 
+def write_message_to_file(message: str):
+    try:
+        with open("messages.log", "a", encoding="utf-8") as f:
+            f.write(f"{message}\n")
+            
+            return "Message was created successfully!"
+
+    except FileNotFoundError:
+        return "File not found!"
+    except Exception as e:
+        return f"Something went wrong: {e}"
+
+
+def create_html_template(message: str):
+    try:
+        with open("templates/example-code-agent.html", "w", encoding="utf-8") as f:
+            f.write(f"{message}\n")
+            
+            return "Template was updated"
+
+    except FileNotFoundError:
+        return "File rag.txt not found!"
+    except Exception as e:
+        return f"Something went wrong: {e}"
+
+
+def generate_trip_price(message: str):
+    try:
+        with open("rag.txt", "r", encoding="utf-8") as f:
+            data = f.read()
+
+            return data
+
+    except FileNotFoundError:
+        return "File rag.txt not found!"
+    except Exception as e:
+        return f"Something went wrong: {e}"
+
+
+
 # --- Tools ---
 TOOLS = {
+    ####
+    # Method get time by timezone
+    ####
     "get_time": lambda timezone: {
         "time": datetime.datetime.now(zoneinfo.ZoneInfo(timezone)).strftime("%Y-%m-%d %H:%M:%S UTC"),
         "timezone": timezone
     },
+
+    #### 
+    # Group of methods that works with messages
+    ####
     "say_hello": lambda name: {"message": f"Hello, {name}!"},
-    "strange_message": lambda message: {"message": f"It's wrong {message}!"},
     "get_firstname_lastname": lambda firstname, lastname: {"message": f"First name {firstname}, Last name: {lastname}."},
-    "write_message": lambda message: {
-        {"status": "ok", "message": "Message was created successfully!"} 
-        if open("messages.log", "a", encoding="utf-8").write(f"{message}\n") 
-        else {"status": "error", "message": "Something went wrong!"}
-    },
-    "create_template": lambda message: {
-        {"status": "ok", "message": "Template was updated"} 
-        if open("templates/example-code-agent.html", "w", encoding="utf-8").write(f"{message}\n")
-        else {"status": "error", "message": "Something went wrong!"}
-    }
+
+    # "strange_message": lambda message: {"message": f"It's wrong {message}!"},
+    "strange_message": lambda message: {"message": f"It's wrong message! Provide user with polite response."},
+    # "strange_message": lambda message: {"message": f"It's wrong message! Don't reply. Provide user with polite response."},
+
+    ####
+    # Method work with file system
+    ####
+    "write_message": lambda message: { "message": write_message_to_file(message)},
+    "create_template": lambda message: { "message": create_html_template(message) },
+
+    ####
+    # Retrieval Augmented Generation method
+    ####
+    "get_trip_price": lambda message: { "message": generate_trip_price(message) }
+    # "get_trip_price": lambda message: { "message": f"Prices: { generate_trip_price(message) }, Request: { message }" }
+
 }
 
 rpc_id = 1
@@ -48,6 +101,7 @@ Available tools:
 4. get_firstname_lastname(firstname: str, lastname: str)
 5. write_message(message: str)
 6. create_template(message: str)
+7. get_trip_price(message: str)
 
 Instructions:
 - If the user query explicitly requests HTML code, your JSON-RPC must call the "create_template" tool, and the resulting output should contain only the HTML code in the "message" argument. Do not add any extra text outside the HTML.
@@ -104,10 +158,12 @@ class SimpleHandler(BaseHTTPRequestHandler):
         query = parse_qs(parsed.query)
 
         if path == "/":
+            template = env.get_template("home.html")
+            html = template.render()
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
-            self.wfile.write(b"<h1>Welcome to root!</h1>")
+            self.wfile.write(html.encode("utf-8"))
 
         elif path == "/example":
             template = env.get_template("example.html")
