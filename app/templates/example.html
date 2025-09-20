@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini ChatGPT</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f8fa;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+    }
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .message {
+      position: relative;
+      max-width: 70%;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .user {
+      align-self: flex-end;
+      background: #0078ff;
+      color: white;
+    }
+    .message.user::before
+    {
+      content: 'User: ';
+      position: absolute;
+      top: -15px;
+      right: 0;
+      color: grey;
+      font-size: x-small;
+    }
+    .message.user::after
+    {
+      content: '';
+      position: absolute;
+      background: #0078ff;
+      width: 10px;
+      height: 10px;
+      bottom: 10px;
+      right: -4px;
+      transform: rotateZ(45deg);
+    }
+    .assistant {
+      align-self: flex-start;
+      background: #e4e6eb;
+    }
+    .message.assistant::before
+    {
+      content: 'AI Agent: ';
+      position: absolute;
+      top: -15px;
+      left: 0;
+      color: grey;
+      font-size: x-small;
+    }
+    .message.assistant::after
+    {
+      content: '';
+      position: absolute;
+      background: #e4e6eb;
+      width: 10px;
+      height: 10px;
+      bottom: 10px;
+      left: -4px;
+      transform: rotateZ(45deg);
+    }
+    .input-container {
+      display: flex;
+      border-top: 1px solid #ccc;
+      padding: 10px;
+      background: white;
+    }
+    .input-container input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .input-container button {
+      margin-left: 10px;
+      padding: 10px 15px;
+      border: none;
+      background: #0078ff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat-container" id="chat"></div>
+
+<div class="input-container">
+  <input id="userInput" type="text" placeholder="Type your message...">
+  <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('userInput');
+
+    function addMessage(text, sender) {
+        const div = document.createElement('div');
+        div.className = 'message ' + sender;
+        div.innerText = text;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const text = input.value.trim();
+        if(!text) return;
+        addMessage(text, 'user');
+        input.value = '';
+
+        const resp = await fetch('/chat?q=' + encodeURIComponent(text));
+        const data = await resp.json();
+        addMessage(data.answer, 'assistant');
+    }
+</script>
+
+</body>
+</html>

@@ -9,6 +9,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app /app
 
-ENV HF_TOKEN=""
-
 CMD ["python", "server.py"]

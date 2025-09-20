@@ -7,6 +7,7 @@ services:
     ports:
       - "7860:7860"
     environment:
-      - HF_TOKEN=${HF_TOKEN}   # токен пробрасываем через .env
+      - HF_TOKEN=${HF_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     volumes:
       - ./app:/app

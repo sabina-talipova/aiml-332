@@ -6,7 +6,7 @@ from openai import OpenAI
 
 api_key = os.getenv("OPENAI_API_KEY")
 
-client = OpenAI()
+client = OpenAI(api_key=api_key)
 
 mcp = subprocess.Popen(
     ["python", "openai_mcp_server.py"],
@@ -29,11 +29,13 @@ You are an AI agent. The user query is:
 Available tools:
 1. get_time(timezone: str)
 2. say_hello(name: str)
+3. strange_message(message: str)
+4. get_firstname_lastname(firstname: str, lastsname: str)
 
 Return a valid JSON-RPC dictionary for MCP:
 {{"jsonrpc":"2.0","id":{rpc_id},"method":"call_tool","params":{{"name": "<tool_name>", "arguments":{{...}}}}}}
 
-Do not add any extra text, only JSON.
+Do not add any extra text, only JSON. All arguments only in English.
 """
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -59,6 +61,6 @@ while True:
         rpc_id += 1
 
         response = send_to_mcp(rpc_instruction)
-        print("🛠 MCP Response:", response.get("result"))
+        print("MCP Response:", response.get("result"))
     except Exception as e:
         print("Error:", e)

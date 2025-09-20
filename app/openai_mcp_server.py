@@ -1,13 +1,16 @@
 import sys
 import json
 import datetime
+import zoneinfo
 
 TOOLS = {
     "get_time": lambda timezone: {
-        "time": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+        "time": datetime.datetime.now(zoneinfo.ZoneInfo(timezone)).strftime("%Y-%m-%d %H:%M:%S UTC"),
         "timezone": timezone
     },
-    "say_hello": lambda name: {"message": f"Hello, {name}!"}
+    "say_hello": lambda name: {"message": f"Hello, {name}!"},
+    "strange_message": lambda message: {"message": f"It's wrong {message}!"},
+    "get_firstname_lastname": lambda firstname, lastname: {"message": f"First name {firstname}, Last name: {lastname}."}
 }
 
 def send_message(msg):
