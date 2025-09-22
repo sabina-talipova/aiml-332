@@ -8,9 +8,8 @@ import datetime
 import zoneinfo
 from openai import OpenAI
 
-# --- OpenAI ---
-api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key)
+
+# --- Tools ---
 
 def write_message_to_file(message: str):
     try:
@@ -50,9 +49,6 @@ def generate_trip_price(message: str):
     except Exception as e:
         return f"Something went wrong: {e}"
 
-
-
-# --- Tools ---
 TOOLS = {
     ####
     # Method get time by timezone
@@ -85,6 +81,10 @@ TOOLS = {
     # "get_trip_price": lambda message: { "message": f"Prices: { generate_trip_price(message) }, Request: { message }" }
 
 }
+
+# --- OpenAI ---
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
 
 rpc_id = 1
 
@@ -146,6 +146,8 @@ Please return a helpful natural language answer for the user.
         temperature=0.3
     )
     return response.choices[0].message.content.strip()
+
+
 
 env = Environment(loader=FileSystemLoader("templates"))
 
