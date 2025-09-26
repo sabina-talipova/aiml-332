@@ -3,26 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <title>Mini AI Agent Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <style>
+    body {
+      font-family: "Montserrat", sans-serif;
+      font-optical-sizing: auto;
+      font-weight: 400;
+      font-style: normal;
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .row {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin: auto;
+      height: 500px;
+    }
+    .menu {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .menu-item {
+      list-style: none;
+      padding: 10px 20px;
+      background-color: #0078ff;
+      border-radius: 100px;
+      margin: 10px;
+    }
+    .menu-item a {
+      text-decoration: none;
+      color:white;
+    }
   </style>
 </head>
 <body>
-  <h1>
-    Welcome to AI Agent system!
-  </h1>
-  <div>
-    <ul>
-      <li>
-        <a href="/example">
-          Chat Page
-        </a>
-      </li>
-      <li>
-        <a href="/example-code-agent">
-          Template Page
-        </a>
-      </li>
-    </ul>
+  <div class="container">
+    <div class="row">
+      <h1>
+        Welcome to AI Agent system!
+      </h1>
+      <div class="menu-block">
+        <ul class="menu">
+          <li class="menu-item">
+            <a href="/example" target="_blank">
+              Chat Page
+            </a>
+          </li>
+          <li class="menu-item">
+            <a href="/example-code-agent" target="_blank">
+              Template Page
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 </body>
 </html>

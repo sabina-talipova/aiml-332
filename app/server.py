@@ -77,8 +77,8 @@ TOOLS = {
     ####
     # Retrieval Augmented Generation method
     ####
-    "get_trip_price": lambda message: { "message": generate_trip_price(message) }
-    # "get_trip_price": lambda message: { "message": f"Prices: { generate_trip_price(message) }, Request: { message }" }
+    # "get_trip_price": lambda message: { "message": generate_trip_price(message) }
+    "get_trip_price": lambda message: { "message": f"Prices: { generate_trip_price(message) }, Request: { message }" }
 
 }
 
@@ -152,7 +152,7 @@ Please return a helpful natural language answer for the user.
 env = Environment(loader=FileSystemLoader("templates"))
 
 
-class SimpleHandler(BaseHTTPRequestHandler):
+class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         global rpc_id
         parsed = urlparse(self.path)
@@ -217,6 +217,6 @@ class SimpleHandler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     host = "0.0.0.0"
     port = 7860
-    server = HTTPServer((host, port), SimpleHandler)
+    server = HTTPServer((host, port), RequestHandler)
     print(f"Server running on {host}:{port}")
     server.serve_forever()
