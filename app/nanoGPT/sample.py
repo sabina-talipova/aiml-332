@@ -3,10 +3,31 @@ Sample from a trained model
 """
 import os
 import pickle
+import math
 from contextlib import nullcontext
 import torch
 import tiktoken
 from model import GPTConfig, GPT
+
+import matplotlib.pyplot as plt
+
+def plot_topk_probs(topk_probs, topk_indices, selected_id, it, enc):
+    probs = topk_probs.detach().cpu().numpy()
+    ids = topk_indices.detach().cpu().numpy()
+
+    labels = [enc.decode([i]) for i in ids]
+    colors = ["blue" if i != selected_id else "red" for i in ids]
+
+    plt.figure(figsize=(8, 4))
+    plt.bar(labels, probs, color=colors)
+    plt.title(f"Step {it}: probability distribution of next token")
+    plt.ylabel("Probability")
+    plt.xlabel("Tokens")
+    plt.tight_layout()
+    # plt.show()
+    plt.savefig("next_token_stats.png")
+
+
 
 # -----------------------------------------------------------------------------
 init_from = 'resume' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
@@ -20,6 +41,7 @@ seed = 1337
 device = 'cuda' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1', etc.
 dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16' # 'float32' or 'bfloat16' or 'float16'
 compile = False # use PyTorch 2.0 to compile the model to be faster
+show_probs = False
 exec(open('configurator.py').read()) # overrides from command line or config file
 # -----------------------------------------------------------------------------
 
@@ -84,6 +106,17 @@ x = (torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...])
 with torch.no_grad():
     with ctx:
         for k in range(num_samples):
-            y = model.generate(x, max_new_tokens, temperature=temperature, top_k=top_k)
+            # y = model.generate(x, max_new_tokens, temperature=temperature, top_k=top_k)
+            y, topk_probs_list, topk_indices_list, selected_ids, log_prob_total = model.generate(x, max_new_tokens, temperature=temperature, top_k=top_k, fixed_response=[42, 17, 256])
             print(decode(y[0].tolist()))
             print('---------------')
+            print('The probability of the generated sequence of tokens:', math.exp(log_prob_total))
+
+            if show_probs == True:
+                plot_topk_probs(
+                    topk_probs_list[k][0],
+                    topk_indices_list[k][0],
+                    selected_ids[k].item(),
+                    k,
+                    enc
+                )

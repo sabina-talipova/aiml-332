@@ -303,12 +303,44 @@ class GPT(nn.Module):
         return mfu
 
     @torch.no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
+    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None, fixed_response=None):
         """
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
         Most likely you'll want to make sure to be in model.eval() mode of operation for this.
         """
+        all_topk_probs = []
+        all_topk_indices = []
+        all_selected_ids = []
+
+        log_prob_total = 0.0
+
+        if fixed_response is not None:
+            for token_id in fixed_response:
+                idx_cond = idx if idx.size(1) <= self.config.block_size else idx[:, -self.config.block_size:]
+                logits, _ = self(idx_cond)
+                logits = logits[:, -1, :] / temperature
+
+                if top_k is not None:
+                    v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
+                    logits[logits < v[:, [-1]]] = -float("Inf")
+
+                probs = F.softmax(logits, dim=-1)
+
+                topk_probs, topk_indices = torch.topk(probs, k=10, dim=-1)
+                all_topk_probs.append(topk_probs.detach().cpu())
+                all_topk_indices.append(topk_indices.detach().cpu())
+
+                token_tensor = torch.tensor([[token_id]], device=idx.device)
+                all_selected_ids.append(token_tensor.detach().cpu())
+
+                token_prob = probs.gather(1, token_tensor)
+                log_prob_total += torch.log(token_prob).item()
+
+                idx = torch.cat((idx, token_tensor), dim=1)
+
+            return idx, all_topk_probs, all_topk_indices, all_selected_ids, log_prob_total
+
         for _ in range(max_new_tokens):
             # if the sequence context is growing too long we must crop it at block_size
             idx_cond = idx if idx.size(1) <= self.config.block_size else idx[:, -self.config.block_size:]
@@ -322,9 +354,19 @@ class GPT(nn.Module):
                 logits[logits < v[:, [-1]]] = -float('Inf')
             # apply softmax to convert logits to (normalized) probabilities
             probs = F.softmax(logits, dim=-1)
+
+            topk_probs, topk_indices = torch.topk(probs, k=10, dim=-1)
+            all_topk_probs.append(topk_probs.detach().cpu())
+            all_topk_indices.append(topk_indices.detach().cpu())
+
             # sample from the distribution
             idx_next = torch.multinomial(probs, num_samples=1)
+            all_selected_ids.append(idx_next.detach().cpu())
+
+            token_prob = probs.gather(1, idx_next)
+            log_prob_total += torch.log(token_prob).item()
+
             # append sampled index to the running sequence and continue
             idx = torch.cat((idx, idx_next), dim=1)
 
-        return idx
+        return idx, all_topk_probs, all_topk_indices, all_selected_ids, log_prob_total
