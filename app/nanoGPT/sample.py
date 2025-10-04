@@ -42,6 +42,7 @@ device = 'cuda' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1', etc.
 dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16' # 'float32' or 'bfloat16' or 'float16'
 compile = False # use PyTorch 2.0 to compile the model to be faster
 show_probs = False
+fixed_response = ''
 exec(open('configurator.py').read()) # overrides from command line or config file
 # -----------------------------------------------------------------------------
 
@@ -107,7 +108,11 @@ with torch.no_grad():
     with ctx:
         for k in range(num_samples):
             # y = model.generate(x, max_new_tokens, temperature=temperature, top_k=top_k)
-            y, topk_probs_list, topk_indices_list, selected_ids, log_prob_total = model.generate(x, max_new_tokens, temperature=temperature, top_k=top_k, fixed_response=[42, 17, 256])
+            if fixed_response:
+                response_tokens = enc.encode(fixed_response)
+            else:
+                response_tokens = None
+            y, topk_probs_list, topk_indices_list, selected_ids, log_prob_total = model.generate(x, max_new_tokens, temperature=temperature, top_k=top_k, fixed_response=response_tokens)
             print(decode(y[0].tolist()))
             print('---------------')
             print('The probability of the generated sequence of tokens:', math.exp(log_prob_total))
